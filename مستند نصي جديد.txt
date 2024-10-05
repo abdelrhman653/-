@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة الزمن - القاضية ممكن</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e30613; /* اللون الأحمر الرئيسي للأهلي */
+            color: #fff; /* اللون الأبيض للنص */
+            text-align: center;
+            margin-top: 50px;
+        }
+        h1 {
+            color: #fff;
+        }
+        .result {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+        img {
+            width: 50%;
+            border: 5px solid #000; /* إطار أسود حول الصورة */
+            border-radius: 15px; /* حواف مدورة للصورة */
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>حاسبة الزمن منذ "القاضية ممكن" - 27 نوفمبر 2020</h1>
+    <div class="result">
+        <p id="days"></p>
+        <p id="hours"></p>
+        <p id="minutes"></p>
+        <p id="seconds"></p>
+        <p id="fridays"></p>
+    </div>
+
+    <!-- استخدام الصورة مع اسم الصورة مباشرة -->
+    <img src="القاضيه ممكن.jpg" alt="أفشة يسدد القاضية ممكن">
+
+    <script src="script.js"></script>
+</body>
+</html>
