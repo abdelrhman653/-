@@ -85,16 +85,28 @@
 
         .bottles-stage {
             width: 100%; flex: 1; display: flex; flex-wrap: wrap;
-            justify-content: center; align-content: center; gap: 60px 22px;
+            justify-content: center; align-content: center; gap: 50px 20px;
             position: relative;
         }
 
-        /* الزجاجة بضبط نقطة الارتكاز عند الفوهة */
+        /* طبقة الـ SVG المخصصة لطباعة السائل بدقة */
+        #svg-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
         .bottle-wrapper {
             width: 44px; height: 160px;
             position: relative;
             transform-origin: top center;
             z-index: 10;
+        }
+
+        .bottle-wrapper.active-pour {
+            z-index: 100 !important;
         }
 
         .bottle {
@@ -114,18 +126,6 @@
 
         .liquid-layer { width: 100%; height: 25%; transition: height 0.2s; }
 
-        /* شعاع السائل المنهمر */
-        .pour-stream {
-            position: absolute;
-            width: 8px;
-            height: 0;
-            border-radius: 4px;
-            z-index: 999;
-            pointer-events: none;
-            opacity: 0;
-            top: 0;
-        }
-
         .modal-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(0, 0, 0, 0.85); display: flex;
@@ -139,7 +139,6 @@
 
     <div class="app-container">
 
-        <!-- واجهة البداية -->
         <div class="screen active" id="screen-menu">
             <div class="logo-box">
                 <div class="logo-icon">🧪</div>
@@ -151,7 +150,6 @@
             </div>
         </div>
 
-        <!-- واجهة المراحل -->
         <div class="screen" id="screen-levels">
             <div class="game-header">
                 <button class="btn-icon" onclick="showScreen('screen-menu')">➔</button>
@@ -161,7 +159,6 @@
             <div class="levels-grid" id="levels-grid"></div>
         </div>
 
-        <!-- واجهة اللعب -->
         <div class="screen" id="screen-game">
             <div class="game-header">
                 <button class="btn-icon" onclick="showScreen('screen-levels')">➔</button>
@@ -170,11 +167,12 @@
             </div>
 
             <div class="bottles-stage" id="bottles-stage">
-                <div class="pour-stream" id="pour-stream"></div>
+                <svg id="svg-layer">
+                    <line id="pour-line" x1="0" y1="0" x2="0" y2="0" stroke="transparent" stroke-width="8" stroke-linecap="round"/>
+                </svg>
             </div>
         </div>
 
-        <!-- نافذة الفوز -->
         <div class="modal-overlay" id="win-modal">
             <div class="modal-card">
                 <h1 style="font-size: 50px;">🎉</h1>
@@ -212,9 +210,9 @@
                 osc.start(); osc.stop(audioCtx.currentTime + 0.08);
             } else if (type === 'pour') {
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-                osc.frequency.linearRampToValueAtTime(350, audioCtx.currentTime + 0.4);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(380, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.4);
             } else if (type === 'win') {
@@ -281,9 +279,9 @@
 
         function renderBottles() {
             const stage = document.getElementById('bottles-stage');
-            const stream = document.getElementById('pour-stream');
+            const svg = document.getElementById('svg-layer');
             stage.innerHTML = '';
-            stage.appendChild(stream);
+            stage.appendChild(svg);
 
             bottlesData.forEach((stack, idx) => {
                 const wrap = document.createElement('div');
@@ -314,7 +312,7 @@
                 if (bottlesData[idx].length > 0) {
                     selectedBottleIdx = idx;
                     playSound('tap');
-                    gsap.to(wraps[idx], { y: -30, duration: 0.2 });
+                    gsap.to(wraps[idx], { y: -25, duration: 0.2 });
                 }
             } else if (selectedBottleIdx === idx) {
                 gsap.to(wraps[idx], { y: 0, duration: 0.2 });
@@ -330,7 +328,7 @@
                     if (bottlesData[idx].length > 0) {
                         selectedBottleIdx = idx;
                         playSound('tap');
-                        gsap.to(wraps[idx], { y: -30, duration: 0.2 });
+                        gsap.to(wraps[idx], { y: -25, duration: 0.2 });
                     } else {
                         selectedBottleIdx = null;
                     }
@@ -344,20 +342,21 @@
             const wraps = document.querySelectorAll('.bottle-wrapper');
             const srcWrap = wraps[fromIdx];
             const destWrap = wraps[toIdx];
-            const stream = document.getElementById('pour-stream');
+            const pourLine = document.getElementById('pour-line');
 
-            // إعادة الترتيب في الـ DOM لضمان الظهور في المقدمة الشديدة
-            stage.appendChild(srcWrap);
+            srcWrap.classList.add('active-pour');
 
-            const srcRect = srcWrap.getBoundingClientRect();
-            const destRect = destWrap.getBoundingClientRect();
+            // حساب المواضع النسبية داخل منطقة اللعب
+            const stageBox = stage.getBoundingClientRect();
+            const srcBox = srcWrap.getBoundingClientRect();
+            const destBox = destWrap.getBoundingClientRect();
 
-            const isRightToLeft = srcRect.left > destRect.left;
+            const isRightToLeft = srcBox.left > destBox.left;
             const tilt = isRightToLeft ? -75 : 75;
 
-            // رفع الزجاجة أعلى بمقدار كبير (65px) لعدم التداخل
-            const targetX = (destRect.left - srcRect.left) + (isRightToLeft ? 38 : -38);
-            const targetY = (destRect.top - srcRect.top) - 65;
+            // تحديد المسافة الدقيقة للزجاجة المايلة فوق الفوهة مباشرة
+            const deltaX = (destBox.left - srcBox.left) + (isRightToLeft ? 30 : -30);
+            const deltaY = (destBox.top - srcBox.top) - 45;
 
             const currentColor = bottlesData[fromIdx][bottlesData[fromIdx].length - 1];
 
@@ -368,6 +367,7 @@
                     while (src.length > 0 && src[src.length - 1] === currentColor && dest.length < 4) {
                         dest.push(src.pop());
                     }
+                    srcWrap.classList.remove('active-pour');
                     selectedBottleIdx = null;
                     renderBottles();
                     isPouring = false;
@@ -375,29 +375,29 @@
                 }
             });
 
-            tl.to(srcWrap, { x: targetX, y: targetY, duration: 0.35, ease: "power2.out" })
-              .to(srcWrap, { rotation: tilt, duration: 0.25, ease: "power1.in" })
+            tl.to(srcWrap, { x: deltaX, y: deltaY, duration: 0.3, ease: "power2.out" })
+              .to(srcWrap, { rotation: tilt, duration: 0.2, ease: "power1.in" })
               .call(() => {
                   playSound('pour');
-                  
-                  const stageRect = stage.getBoundingClientRect();
-                  const mouthX = destRect.left + (destRect.width / 2) - stageRect.left;
-                  const mouthY = destRect.top - stageRect.top - 10;
 
-                  gsap.set(stream, {
-                      x: mouthX - 4,
-                      y: mouthY,
-                      height: 70, // إطالة الشعاع ليغطي المسافة العالية الجديدة
-                      backgroundColor: currentColor,
-                      opacity: 1
-                  });
+                  // رسم خيط السائل عبر SVG من الفوهة المايلة إلى داخل الزجاجة بالضبط
+                  const startX = (srcBox.left - stageBox.left) + deltaX + (isRightToLeft ? 5 : 39);
+                  const startY = (srcBox.top - stageBox.top) + deltaY + 10;
+                  const endX = (destBox.left - stageBox.left) + (destBox.width / 2);
+                  const endY = (destBox.top - stageBox.top) + 20;
+
+                  pourLine.setAttribute('x1', startX);
+                  pourLine.setAttribute('y1', startY);
+                  pourLine.setAttribute('x2', endX);
+                  pourLine.setAttribute('y2', endY);
+                  pourLine.setAttribute('stroke', currentColor);
               })
               .to(srcWrap, { duration: 0.45 })
               .call(() => {
-                  gsap.to(stream, { opacity: 0, height: 0, duration: 0.1 });
+                  pourLine.setAttribute('stroke', 'transparent');
               })
               .to(srcWrap, { rotation: 0, duration: 0.2 })
-              .to(srcWrap, { x: 0, y: 0, duration: 0.35 });
+              .to(srcWrap, { x: 0, y: 0, duration: 0.3 });
         }
 
         function checkWin() {
