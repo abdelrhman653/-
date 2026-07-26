@@ -85,7 +85,7 @@
       transform: scale(0.95);
     }
 
-    /* Main Container */
+    /* Main Container & Centering */
     .container {
       width: 100%;
       max-width: 500px;
@@ -93,6 +93,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       flex-grow: 1;
     }
 
@@ -102,7 +103,6 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 14px;
       width: 100%;
-      margin-top: 10px;
     }
 
     .menu-card {
@@ -141,6 +141,7 @@
       width: 100%;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
     }
 
     .screen.active {
@@ -256,7 +257,7 @@
       z-index: 1000;
       display: none;
       transform: translate(-50%, -50%);
-      opacity: 0.9;
+      opacity: 0.95;
       direction: ltr;
     }
 
@@ -270,9 +271,11 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
       gap: 14px;
-      margin-top: 15px;
+      margin-top: 10px;
       direction: ltr;
+      width: 100%;
     }
 
     .tube {
@@ -367,6 +370,7 @@
       border-radius: 12px;
       border: 1px solid var(--card-border);
       direction: ltr;
+      margin: 0 auto;
     }
 
     .path-cell {
@@ -508,7 +512,7 @@
     <div id="screen-mm" class="screen">
       <div class="score-board">
         <div class="score-item"><div class="label">المرحلة</div><div class="val" id="mm-level">1</div></div>
-        <div class="score-item"><div class="label">الوقت</div><div class="val" id="mm-timer">0 ثانية</div></div>
+        <div class="score-item"><div class="label">الوقت المتبقي</div><div class="val" id="mm-timer" style="color: var(--accent-red);">0 ثانية</div></div>
         <div class="score-item"><div class="label">الحركات</div><div class="val" id="mm-moves">0</div></div>
       </div>
       <div class="memory-grid" id="mm-board"></div>
@@ -555,10 +559,10 @@
   <!-- WIN DIALOG MODAL -->
   <div class="modal" id="win-modal">
     <div class="modal-content">
-      <div style="font-size: 3rem; margin-bottom: 8px;">🎉</div>
+      <div style="font-size: 3rem; margin-bottom: 8px;" id="win-icon">🎉</div>
       <h3 id="win-title">ألف مبروك!</h3>
       <p id="win-desc" style="color: var(--text-sub); font-size: 0.95rem; margin-bottom: 18px;">لقد أكملت المرحلة بنجاح!</p>
-      <button class="btn-icon" style="width: 100%; justify-content: center; background: var(--accent-green);" onclick="nextLevelAction()">المرحلة التالية ➡️</button>
+      <button class="btn-icon" id="win-btn" style="width: 100%; justify-content: center; background: var(--accent-green);" onclick="nextLevelAction()">المرحلة التالية ➡️</button>
     </div>
   </div>
 
@@ -616,7 +620,7 @@
           });
         }
       } catch(e) {
-        // Audio fallback ignore
+        // Fallback
       }
     }
 
@@ -680,10 +684,13 @@
       document.getElementById('levels-modal').classList.remove('active');
     }
 
-    function showWinModal(title, desc, callback) {
-      playSound('win');
+    function showWinModal(title, desc, callback, isWin = true) {
+      if(isWin) playSound('win');
+      document.getElementById('win-icon').innerText = isWin ? '🎉' : '⏳';
       document.getElementById('win-title').innerText = title;
       document.getElementById('win-desc').innerText = desc;
+      document.getElementById('win-btn').innerText = isWin ? 'المرحلة التالية ➡️' : 'إعادة المحاولة 🔄';
+      document.getElementById('win-btn').style.background = isWin ? 'var(--accent-green)' : 'var(--accent-blue)';
       nextLevelCallback = callback;
       document.getElementById('win-modal').classList.add('active');
     }
@@ -836,7 +843,7 @@
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       dragGhost.style.left = clientX + 'px';
-      dragGhost.style.top = (clientY - 40) + 'px';
+      dragGhost.style.top = (clientY - 60) + 'px';
     }
 
     function handleDragMove(e) {
@@ -845,7 +852,7 @@
       moveGhost(e);
 
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY - 40 : e.clientY;
+      const clientY = e.touches ? e.touches[0].clientY - 60 : e.clientY;
 
       clearShadows();
 
@@ -882,7 +889,7 @@
       if(draggedPieceIndex === null) return;
 
       const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
-      const clientY = e.changedTouches ? e.changedTouches[0].clientY - 40 : e.clientY;
+      const clientY = e.changedTouches ? e.changedTouches[0].clientY - 60 : e.clientY;
 
       const boardRect = document.getElementById('bb-board').getBoundingClientRect();
 
@@ -1000,7 +1007,7 @@
         setTimeout(() => {
           showWinModal("Game Over", `للأسف المربع اتملى وما بقاش فيه مكان.\nالسكور النهائي: ${bbScore}`, () => {
             startBlockBlast();
-          });
+          }, false);
         }, 300);
       }
     }
@@ -1098,7 +1105,7 @@
     }
 
     // ==========================================
-    // 3. MEMORY MATCH GAME (TIMER & MODAL ENHANCED)
+    // 3. MEMORY MATCH GAME (COUNTDOWN TIMER FIXED)
     // ==========================================
     let mmCards = [];
     let mmFlipped = [];
@@ -1120,18 +1127,28 @@
       document.getElementById('mm-level').innerText = level;
       mmMoves = 0;
       mmMatches = 0;
-      mmTimerSeconds = 0;
+      
+      const pairsCount = Math.min(4 + Math.floor(level / 2), 8);
+      // حساب وقت مناسب يزيد كلما زادت صعوبة المرحلة
+      mmTimerSeconds = Math.max(15, pairsCount * 6 + 5);
+
       document.getElementById('mm-moves').innerText = 0;
-      document.getElementById('mm-timer').innerText = '0 ثانية';
+      document.getElementById('mm-timer').innerText = `${mmTimerSeconds} ثانية`;
       mmFlipped = [];
 
       if(mmTimerInterval) clearInterval(mmTimerInterval);
       mmTimerInterval = setInterval(() => {
-        mmTimerSeconds++;
+        mmTimerSeconds--;
         document.getElementById('mm-timer').innerText = `${mmTimerSeconds} ثانية`;
+
+        if(mmTimerSeconds <= 0) {
+          clearInterval(mmTimerInterval);
+          showWinModal("انتهى الوقت!", "للأسف خلص الوقت قبل ما تجمع كل الكروت. حاول مرة ثانية!", () => {
+            initMemoryMatch(gameProgress.mmLevel);
+          }, false);
+        }
       }, 1000);
 
-      const pairsCount = Math.min(4 + Math.floor(level / 2), 8);
       const selectedEmojis = EMOJI_POOL.slice(0, pairsCount);
       const deck = [...selectedEmojis, ...selectedEmojis].sort(() => Math.random() - 0.5);
 
@@ -1152,7 +1169,7 @@
     }
 
     function handleMMCardClick(card) {
-      if(card.isFlipped || card.isMatched || mmFlipped.length === 2) return;
+      if(card.isFlipped || card.isMatched || mmFlipped.length === 2 || mmTimerSeconds <= 0) return;
       playSound('click');
 
       card.isFlipped = true;
@@ -1172,7 +1189,7 @@
           if(mmMatches === mmCards.length / 2) {
             clearInterval(mmTimerInterval);
             setTimeout(() => {
-              showWinModal("تطابق ممتاز!", `أنهيت المرحلة في ${mmTimerSeconds} ثانية وبـ ${mmMoves} حركة!`, () => {
+              showWinModal("تطابق ممتاز!", `أنهيت المرحلة بـ ${mmMoves} حركة بنجاح!`, () => {
                 gameProgress.mmLevel++;
                 saveProgress();
                 initMemoryMatch(gameProgress.mmLevel);
@@ -1249,7 +1266,7 @@
         clearInterval(snakeInterval);
         showWinModal("خسرت!", "اصطدمت بالجدار أو بنفسك. حاول مرة ثانية!", () => {
           initSnake(gameProgress.snLevel);
-        });
+        }, false);
         return;
       }
 
@@ -1296,7 +1313,7 @@
     }
 
     // ==========================================
-    // 5. OPEN PATH GAME (FULL BALANCED BOARD FIX)
+    // 5. OPEN PATH GAME (BALANCED GRID FIX)
     // ==========================================
     let pathGrid = [];
     let selectedCell = null;
@@ -1311,10 +1328,10 @@
 
     function initOpenPath(level) {
       document.getElementById('op-level').innerText = level;
-      gridSize = Math.min(6 + Math.floor(level / 3), 8);
+      gridSize = 6; 
       
-      const totalCells = gridSize * gridSize;
-      const totalPairs = Math.floor(totalCells / 2);
+      const totalCells = gridSize * gridSize; // 36 مربع متوازن
+      const totalPairs = totalCells / 2; // 18 زوج مكتمل
       
       const animals = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
       let items = [];
@@ -1322,10 +1339,6 @@
       for(let i=0; i<totalPairs; i++) {
         const animal = animals[i % animals.length];
         items.push(animal, animal);
-      }
-      
-      while(items.length < totalCells) {
-        items.push(null);
       }
       
       items.sort(() => Math.random() - 0.5);
@@ -1346,15 +1359,15 @@
     function renderPathBoard() {
       const board = document.getElementById('path-grid');
       board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-      board.style.width = `${gridSize * 45}px`;
+      board.style.width = `${gridSize * 48}px`;
       board.innerHTML = '';
 
       for(let r=0; r<gridSize; r++) {
         for(let c=0; c<gridSize; c++) {
           const cell = document.createElement('div');
           cell.className = `path-cell ${selectedCell && selectedCell.r === r && selectedCell.c === c ? 'selected' : ''}`;
-          cell.style.width = '40px';
-          cell.style.height = '40px';
+          cell.style.width = '44px';
+          cell.style.height = '44px';
           cell.innerText = pathGrid[r][c] || '';
           cell.onclick = () => handlePathCellClick(r, c);
           board.appendChild(cell);
