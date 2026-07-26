@@ -252,7 +252,7 @@
       pointer-events: none;
       z-index: 1000;
       display: none;
-      transform: translate(-50%, -100%); /* Offset ghost above touch point for visibility */
+      transform: translate(-50%, -100%);
       opacity: 0.95;
       direction: ltr;
     }
@@ -360,31 +360,42 @@
       align-items: center;
     }
 
-    /* 5. Open Path */
+    /* 5. Open Path (Resized & Large) */
     #path-grid {
       display: grid;
-      gap: 4px;
+      gap: 6px;
       background: #0f172a;
-      padding: 8px;
-      border-radius: 16px;
-      border: 1px solid var(--card-border);
+      padding: 10px;
+      border-radius: 20px;
+      border: 2px solid var(--card-border);
       direction: ltr;
-      margin: 0 auto;
+      width: 92vw;
+      height: 92vw;
+      max-width: 360px;
+      max-height: 360px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
     }
 
     .path-cell {
       background: #1e293b;
-      border-radius: 8px;
+      border-radius: 10px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.4rem;
+      font-size: 1.8rem;
       cursor: pointer;
+      aspect-ratio: 1;
+      transition: transform 0.1s, background 0.15s;
+    }
+
+    .path-cell:active {
+      transform: scale(0.92);
     }
 
     .path-cell.selected {
       background: #334155;
       border: 2px solid var(--accent-blue);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
     }
 
     .path-cell.highlight-path {
@@ -609,9 +620,7 @@
             o.stop(now + idx * 0.1 + 0.2);
           });
         }
-      } catch(e) {
-        // Fallback
-      }
+      } catch(e) {}
     }
 
     // APP STATE & DATA
@@ -713,7 +722,7 @@
     }
 
     // ==========================================
-    // 1. BLOCK BLAST GAME (SMOOTH DRAG & ACCURATE SNAP)
+    // 1. BLOCK BLAST GAME
     // ==========================================
     const BLOCK_COLORS = ['#38bdf8', '#22c55e', '#ef4444', '#f59e0b', '#a855f7', '#ec4899'];
     const PIECE_SHAPES = [
@@ -851,7 +860,6 @@
 
     function getTargetGridPos(clientX, clientY) {
       const boardRect = document.getElementById('bb-board').getBoundingClientRect();
-      // Offset touch by 70px upwards so user sees placement area clearly
       const targetY = clientY - 70;
       const targetX = clientX;
 
@@ -1315,7 +1323,7 @@
     }
 
     // ==========================================
-    // 5. OPEN PATH GAME
+    // 5. OPEN PATH GAME (RESPONSIVE & FLUID)
     // ==========================================
     let pathGrid = [];
     let selectedCell = null;
@@ -1361,15 +1369,13 @@
     function renderPathBoard() {
       const board = document.getElementById('path-grid');
       board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-      board.style.width = `${gridSize * 48}px`;
+      board.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
       board.innerHTML = '';
 
       for(let r=0; r<gridSize; r++) {
         for(let c=0; c<gridSize; c++) {
           const cell = document.createElement('div');
           cell.className = `path-cell ${selectedCell && selectedCell.r === r && selectedCell.c === c ? 'selected' : ''}`;
-          cell.style.width = '44px';
-          cell.style.height = '44px';
           cell.innerText = pathGrid[r][c] || '';
           cell.onclick = () => handlePathCellClick(r, c);
           board.appendChild(cell);
