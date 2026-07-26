@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>لعبة فرز المياه - Water Sort Studio</title>
-    <!-- مكتبة GSAP للأنيميشن الاحترافي السلس -->
+    <title>Water Sort Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-main: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --glass-bg: rgba(255, 255, 255, 0.07);
+            --bg-main: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.15);
             --text: #f8fafc;
         }
@@ -21,7 +18,7 @@
             user-select: none;
             -webkit-user-select: none;
             margin: 0; padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
         body {
@@ -34,7 +31,6 @@
             align-items: center;
         }
 
-        /* Container الرئيسي */
         .app-container {
             width: 100%;
             max-width: 480px;
@@ -43,278 +39,141 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            background: rgba(0, 0, 0, 0.2);
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            background: #0b1120;
         }
 
-        /* نظام الشاشات (Screen Management) */
         .screen {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 30px 20px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: scale(0.95);
-            z-index: 1;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between;
+            padding: 30px 20px; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s; z-index: 1;
         }
 
-        .screen.active {
-            opacity: 1;
-            pointer-events: all;
-            transform: scale(1);
-            z-index: 2;
-        }
+        .screen.active { opacity: 1; pointer-events: all; z-index: 2; }
 
-        /* 1. واجهة البداية (Main Menu) */
-        .logo-box {
-            text-align: center;
-            margin-top: 60px;
-        }
-        .logo-icon {
-            font-size: 70px;
-            filter: drop-shadow(0 10px 15px rgba(99, 102, 241, 0.4));
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-        .logo-title {
-            font-size: 32px;
-            font-weight: 900;
-            background: linear-gradient(to right, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-top: 10px;
-        }
-
-        .menu-buttons {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 50px;
-        }
+        /* واجهة البداية */
+        .logo-box { text-align: center; margin-top: 80px; }
+        .logo-icon { font-size: 80px; }
+        .logo-title { font-size: 32px; font-weight: 900; color: #38bdf8; margin-top: 10px; }
 
         .btn-ui {
-            width: 100%;
-            padding: 16px;
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            color: #fff;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            transition: all 0.2s ease;
+            width: 100%; padding: 16px; border-radius: 20px;
+            border: 1px solid var(--glass-border); background: var(--glass-bg);
+            color: #fff; font-size: 18px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        .btn-ui:active { transform: scale(0.96); }
-        .btn-primary {
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            border: none;
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
-        }
+        .btn-primary { background: linear-gradient(135deg, #0284c7, #6366f1); border: none; }
 
-        /* 2. واجهة اختيار المراحل (Level Select) */
-        .header-bar {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .btn-back {
-            width: 45px; height: 45px;
-            border-radius: 50%;
-            border: 1px solid var(--glass-border);
-            background: var(--glass-bg);
-            color: #fff;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
+        /* شبكة المراحل */
         .levels-grid {
-            width: 100%;
-            flex: 1;
-            margin: 20px 0;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            width: 100%; flex: 1; margin: 20px 0;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
             overflow-y: auto;
-            padding: 10px 5px;
         }
-        .levels-grid::-webkit-scrollbar { width: 0; }
-
         .level-card {
-            aspect-ratio: 1;
-            border-radius: 18px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s ease;
+            aspect-ratio: 1; border-radius: 16px; background: var(--glass-bg);
+            border: 1px solid var(--glass-border); display: flex;
+            align-items: center; justify-content: center; font-size: 20px; font-weight: bold;
         }
-        .level-card.completed {
-            background: rgba(34, 197, 94, 0.15);
-            border-color: rgba(34, 197, 94, 0.4);
-            color: #4ade80;
-        }
-        .level-card.locked {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        .level-card.completed { background: rgba(34, 197, 94, 0.2); border-color: #22c55e; color: #4ade80; }
 
-        /* 3. واجهة اللعب (Gameplay) */
-        .game-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* منطقة اللعب */
+        .game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .btn-icon { width: 45px; height: 45px; border-radius: 50%; border: 1px solid var(--glass-border); background: var(--glass-bg); color: #fff; font-size: 18px; }
 
         .bottles-stage {
-            width: 100%;
-            flex: 1;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-content: center;
-            gap: 30px 18px;
-        }
-
-        /* تصميم الزجاجة الاحترافي جداً */
-        .bottle {
-            width: 44px;
-            height: 160px;
-            border: 3px solid rgba(255, 255, 255, 0.9);
-            border-top: none;
-            border-radius: 0 0 22px 22px;
+            width: 100%; flex: 1; display: flex; flex-wrap: wrap;
+            justify-content: center; align-content: center; gap: 40px 22px;
             position: relative;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column-reverse;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 12px rgba(255,255,255,0.2);
-            transform-origin: center bottom;
         }
-        .bottle::before {
-            content: '';
-            position: absolute;
-            top: -6px; left: -4px; right: -4px;
-            height: 6px;
+
+        /* الزجاجة بضبط نقطة الارتكاز عند الفوهة */
+        .bottle-wrapper {
+            width: 44px; height: 160px;
+            position: relative;
+            transform-origin: top center; /* أهم تعديل لضبط الدوران */
+            z-index: 10;
+        }
+
+        .bottle {
+            width: 100%; height: 100%;
             border: 3px solid rgba(255, 255, 255, 0.9);
-            border-radius: 4px;
-        }
-        /* لمعة الزجاج */
-        .bottle::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 3px; width: 5px; height: 100%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.5), transparent);
-            border-radius: 3px;
-            pointer-events: none;
-            z-index: 5;
+            border-top: none; border-radius: 0 0 22px 22px;
+            display: flex; flex-direction: column-reverse;
+            overflow: hidden; background: rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.2);
+            position: relative;
         }
 
-        .liquid-layer {
-            width: 100%;
-            height: 25%;
-            transition: height 0.3s ease;
+        .bottle::before {
+            content: ''; position: absolute; top: -6px; left: -4px; right: -4px; height: 6px;
+            border: 3px solid rgba(255, 255, 255, 0.9); border-radius: 4px;
         }
 
-        /* نافذة الفوز Popup */
+        .liquid-layer { width: 100%; height: 25%; transition: height 0.2s; }
+
+        /* شعاع السائل المنهمر */
+        .pour-stream {
+            position: absolute; width: 6px; height: 0;
+            border-radius: 3px; z-index: 99; pointer-events: none;
+            opacity: 0; transform-origin: top center;
+        }
+
         .modal-overlay {
-            position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0; pointer-events: none;
-            transition: 0.3s;
-            z-index: 100;
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0, 0, 0, 0.85); display: flex;
+            justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 100;
         }
         .modal-overlay.show { opacity: 1; pointer-events: all; }
-        .modal-card {
-            background: #1e1b4b;
-            border: 1px solid var(--primary);
-            padding: 30px;
-            border-radius: 24px;
-            text-align: center;
-            width: 85%;
-            max-width: 320px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        }
+        .modal-card { background: #1e293b; padding: 30px; border-radius: 24px; text-align: center; width: 80%; }
     </style>
 </head>
 <body>
 
     <div class="app-container">
 
-        <!-- 1. واجهة البداية -->
+        <!-- واجهة البداية -->
         <div class="screen active" id="screen-menu">
             <div class="logo-box">
                 <div class="logo-icon">🧪</div>
                 <div class="logo-title">فرز الألوان</div>
             </div>
-
-            <div class="menu-buttons">
-                <button class="btn-ui btn-primary" onclick="playCurrentLevel()">
-                    <span>بدء اللعب</span> ▶️
-                </button>
-                <button class="btn-ui" onclick="showScreen('screen-levels')">
-                    <span>المراحل</span> 🏆
-                </button>
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 15px; margin-bottom: 50px;">
+                <button class="btn-ui btn-primary" onclick="playCurrentLevel()">بدء اللعب ▶️</button>
+                <button class="btn-ui" onclick="showScreen('screen-levels')">المراحل 🏆</button>
             </div>
         </div>
 
-        <!-- 2. واجهة اختيار المراحل -->
+        <!-- واجهة المراحل -->
         <div class="screen" id="screen-levels">
-            <div class="header-bar">
-                <button class="btn-back" onclick="showScreen('screen-menu')">➔</button>
-                <h2>اختر المرحلة</h2>
+            <div class="game-header">
+                <button class="btn-icon" onclick="showScreen('screen-menu')">➔</button>
+                <h2>المراحل</h2>
                 <div style="width: 45px;"></div>
             </div>
-
             <div class="levels-grid" id="levels-grid"></div>
         </div>
 
-        <!-- 3. واجهة اللعب -->
+        <!-- واجهة اللعب -->
         <div class="screen" id="screen-game">
             <div class="game-header">
-                <button class="btn-back" onclick="showScreen('screen-levels')">➔</button>
+                <button class="btn-icon" onclick="showScreen('screen-levels')">➔</button>
                 <h3 id="game-level-title">المرحلة 1</h3>
-                <button class="btn-back" onclick="initGameStage()">🔄</button>
+                <button class="btn-icon" onclick="initGameStage()">🔄</button>
             </div>
 
-            <div class="bottles-stage" id="bottles-stage"></div>
+            <div class="bottles-stage" id="bottles-stage">
+                <div class="pour-stream" id="pour-stream"></div>
+            </div>
         </div>
 
         <!-- نافذة الفوز -->
         <div class="modal-overlay" id="win-modal">
             <div class="modal-card">
-                <h1 style="font-size: 50px; margin-bottom: 10px;">🎉</h1>
-                <h2 style="color: #4ade80; margin-bottom: 10px;">أحسنت!</h2>
-                <p style="color: #a5b4fc; margin-bottom: 20px;">تم إكمال المرحلة بنجاح</p>
+                <h1 style="font-size: 50px;">🎉</h1>
+                <h2 style="color: #4ade80; margin: 10px 0;">ممتاز!</h2>
                 <button class="btn-ui btn-primary" onclick="nextLevel()">المرحلة التالية ➡️</button>
             </div>
         </div>
@@ -322,33 +181,44 @@
     </div>
 
     <script>
-        // الألوان التجاريّة الزاهية
-        const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#ec4899', '#14b8a6', '#f97316'];
-        
-        let currentLevel = parseInt(localStorage.getItem('ws_user_level')) || 1;
+        const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#ec4899'];
+        let currentLevel = parseInt(localStorage.getItem('ws_lvl')) || 1;
         let selectedBottleIdx = null;
         let bottlesData = [];
         let isPouring = false;
 
-        // إدارة الصوت الذكية (Web Audio API بدون روابط خارجية)
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSfx(type) {
+        // نظام محرك الصوت المستقر
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx) return;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
 
             if (type === 'tap') {
-                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
                 gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
                 osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'pour') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(350, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
             } else if (type === 'win') {
-                [400, 550, 700, 850].forEach((freq, i) => {
+                [300, 450, 600, 800].forEach((f, i) => {
                     const o = audioCtx.createOscillator();
                     const g = audioCtx.createGain();
                     o.connect(g); g.connect(audioCtx.destination);
-                    o.frequency.value = freq;
+                    o.frequency.value = f;
                     g.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.1);
                     g.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.2);
                     o.start(audioCtx.currentTime + i * 0.1);
@@ -357,41 +227,28 @@
             }
         }
 
-        // التنقل بين الشاشات
-        function showScreen(screenId) {
-            playSfx('tap');
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+        document.body.addEventListener('click', initAudio, { once: true });
 
-            if (screenId === 'screen-levels') {
-                renderLevelsGrid();
-            }
+        function showScreen(id) {
+            playSound('tap');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if (id === 'screen-levels') renderLevelsGrid();
         }
 
-        // بناء شبكة المراحل
         function renderLevelsGrid() {
             const grid = document.getElementById('levels-grid');
             grid.innerHTML = '';
-
             for (let i = 1; i <= 100; i++) {
                 const card = document.createElement('div');
-                card.className = `level-card ${i < currentLevel ? 'completed' : ''} ${i > currentLevel ? 'locked' : ''}`;
+                card.className = `level-card ${i < currentLevel ? 'completed' : ''}`;
                 card.innerText = i;
-                
-                if (i <= currentLevel) {
-                    card.onclick = () => {
-                        currentLevel = i;
-                        startLevel(i);
-                    };
-                }
+                if (i <= currentLevel) card.onclick = () => { currentLevel = i; startLevel(i); };
                 grid.appendChild(card);
             }
         }
 
-        function playCurrentLevel() {
-            startLevel(currentLevel);
-        }
-
+        function playCurrentLevel() { startLevel(currentLevel); }
         function startLevel(lvl) {
             currentLevel = lvl;
             showScreen('screen-game');
@@ -399,13 +256,10 @@
             initGameStage();
         }
 
-        // تجهيز بيانات المرحلة
         function initGameStage() {
             document.getElementById('win-modal').classList.remove('show');
-            selectedBottleIdx = null;
-            isPouring = false;
-
-            let colorCount = Math.min(2 + Math.floor((currentLevel - 1) / 2), 6);
+            selectedBottleIdx = null; isPouring = false;
+            let colorCount = Math.min(2 + Math.floor((currentLevel - 1) / 2), 5);
             let totalBottles = colorCount + 2;
 
             let pool = [];
@@ -415,54 +269,49 @@
             pool.sort(() => Math.random() - 0.5);
 
             bottlesData = [];
-            for (let i = 0; i < colorCount; i++) {
-                bottlesData.push(pool.slice(i * 4, (i + 1) * 4));
-            }
-            for (let i = 0; i < totalBottles - colorCount; i++) {
-                bottlesData.push([]);
-            }
+            for (let i = 0; i < colorCount; i++) bottlesData.push(pool.slice(i * 4, (i + 1) * 4));
+            for (let i = 0; i < totalBottles - colorCount; i++) bottlesData.push([]);
 
             renderBottles();
         }
 
-        // رسم الأزايز
         function renderBottles() {
             const stage = document.getElementById('bottles-stage');
-            stage.innerHTML = '';
+            stage.querySelectorAll('.bottle-wrapper').forEach(e => e.remove());
 
             bottlesData.forEach((stack, idx) => {
-                const bottle = document.createElement('div');
-                bottle.className = 'bottle';
-                bottle.id = `bottle-${idx}`;
-                bottle.onclick = () => onBottleClick(idx);
+                const wrap = document.createElement('div');
+                wrap.className = 'bottle-wrapper';
+                wrap.id = `wrap-${idx}`;
+
+                const b = document.createElement('div');
+                b.className = 'bottle';
+                b.onclick = () => onBottleClick(idx);
 
                 stack.forEach(color => {
-                    const liquid = document.createElement('div');
-                    liquid.className = 'liquid-layer';
-                    liquid.style.backgroundColor = color;
-                    bottle.appendChild(liquid);
+                    const l = document.createElement('div');
+                    l.className = 'liquid-layer';
+                    l.style.backgroundColor = color;
+                    b.appendChild(l);
                 });
 
-                stage.appendChild(bottle);
+                wrap.appendChild(b);
+                stage.appendChild(wrap);
             });
         }
 
-        // منطق الضغط والأنيميشن الاحترافي بـ GSAP
         function onBottleClick(idx) {
             if (isPouring) return;
-
-            const bottleEls = document.querySelectorAll('.bottle');
+            const wraps = document.querySelectorAll('.bottle-wrapper');
 
             if (selectedBottleIdx === null) {
                 if (bottlesData[idx].length > 0) {
                     selectedBottleIdx = idx;
-                    playSfx('tap');
-                    // رفع الزجاجة المحددة لفوق بـ GSAP
-                    gsap.to(bottleEls[idx], { y: -20, duration: 0.2, ease: "power2.out" });
+                    playSound('tap');
+                    gsap.to(wraps[idx], { y: -25, duration: 0.2 });
                 }
             } else if (selectedBottleIdx === idx) {
-                // إلغاء التحديد
-                gsap.to(bottleEls[idx], { y: 0, duration: 0.2, ease: "power2.out" });
+                gsap.to(wraps[idx], { y: 0, duration: 0.2 });
                 selectedBottleIdx = null;
             } else {
                 const src = bottlesData[selectedBottleIdx];
@@ -471,12 +320,11 @@
                 if (dest.length < 4 && (dest.length === 0 || dest[dest.length - 1] === src[src.length - 1])) {
                     pourAnimation(selectedBottleIdx, idx);
                 } else {
-                    // تحريك الزجاجة القديمة لأصلها وتحديد الجديدة
-                    gsap.to(bottleEls[selectedBottleIdx], { y: 0, duration: 0.2 });
+                    gsap.to(wraps[selectedBottleIdx], { y: 0, duration: 0.2 });
                     if (bottlesData[idx].length > 0) {
                         selectedBottleIdx = idx;
-                        playSfx('tap');
-                        gsap.to(bottleEls[idx], { y: -20, duration: 0.2 });
+                        playSound('tap');
+                        gsap.to(wraps[idx], { y: -25, duration: 0.2 });
                     } else {
                         selectedBottleIdx = null;
                     }
@@ -484,31 +332,31 @@
             }
         }
 
-        // أنيميشن حركة الصب الفخمة بالزوايا والانسياب
+        // أنيميشن دلق مائي حقيقي بدقة تامة
         function pourAnimation(fromIdx, toIdx) {
             isPouring = true;
-            const bottleEls = document.querySelectorAll('.bottle');
-            const srcEl = bottleEls[fromIdx];
-            const destEl = bottleEls[toIdx];
+            const wraps = document.querySelectorAll('.bottle-wrapper');
+            const srcWrap = wraps[fromIdx];
+            const destWrap = wraps[toIdx];
+            const stream = document.getElementById('pour-stream');
 
-            const srcRect = srcEl.getBoundingClientRect();
-            const destRect = destEl.getBoundingClientRect();
+            const srcRect = srcWrap.getBoundingClientRect();
+            const destRect = destWrap.getBoundingClientRect();
 
-            const deltaX = destRect.left - srcRect.left + (destRect.width / 2);
-            const deltaY = destRect.top - srcRect.top - 40;
-            const tiltAngle = deltaX > 0 ? 60 : -60;
+            // حساب الإحداثيات للوصول تماماً فوق الفوهة
+            const targetX = destRect.left - srcRect.left + (destRect.width / 2) + (srcRect.left < destRect.left ? -15 : 15);
+            const targetY = destRect.top - srcRect.top - 20;
+            const tilt = srcRect.left < destRect.left ? 75 : -75;
+
+            const currentColor = bottlesData[fromIdx][bottlesData[fromIdx].length - 1];
 
             const tl = gsap.timeline({
                 onComplete: () => {
-                    // تحديث البيانات بعد الأنيميشن
                     const src = bottlesData[fromIdx];
                     const dest = bottlesData[toIdx];
-                    const colorToPour = src[src.length - 1];
-
-                    while (src.length > 0 && src[src.length - 1] === colorToPour && dest.length < 4) {
+                    while (src.length > 0 && src[src.length - 1] === currentColor && dest.length < 4) {
                         dest.push(src.pop());
                     }
-
                     selectedBottleIdx = null;
                     renderBottles();
                     isPouring = false;
@@ -516,29 +364,42 @@
                 }
             });
 
-            // 1. تحريك الزجاجة لفوق الزجاجة المستهدفة وإمالتها
-            tl.to(srcEl, { x: deltaX, y: deltaY, rotation: tiltAngle, duration: 0.4, ease: "power2.inOut" })
-              .to(srcEl, { duration: 0.3 }) // ثبات بسيط لتمثيل عملية الصب
-              .to(srcEl, { x: 0, y: 0, rotation: 0, duration: 0.3, ease: "power2.inOut" });
+            // 1. الانتقال فوق الفوهة بالضبط ثم الإمالة
+            tl.to(srcWrap, { x: targetX, y: targetY, duration: 0.3, ease: "power2.out" })
+              .to(srcWrap, { rotation: tilt, duration: 0.2, ease: "power1.in" })
+              .call(() => {
+                  playSound('pour');
+                  // إظهار شعاع المياه
+                  const streamX = destRect.left + (destRect.width / 2) - stageRectLeft();
+                  const streamY = destRect.top - stageRectTop();
+                  gsap.set(stream, {
+                      x: streamX - 3, y: streamY,
+                      height: 40, backgroundColor: currentColor, opacity: 1
+                  });
+              })
+              .to(srcWrap, { duration: 0.4 }) // زمل وقت الدلق
+              .call(() => {
+                  gsap.to(stream, { opacity: 0, height: 0, duration: 0.1 });
+              })
+              .to(srcWrap, { rotation: 0, duration: 0.2 })
+              .to(srcWrap, { x: 0, y: 0, duration: 0.3 });
         }
+
+        function stageRectLeft() { return document.getElementById('bottles-stage').getBoundingClientRect().left; }
+        function stageRectTop() { return document.getElementById('bottles-stage').getBoundingClientRect().top; }
 
         function checkWin() {
             const win = bottlesData.every(b => b.length === 0 || (b.length === 4 && b.every(c => c === b[0])));
             if (win) {
-                playSfx('win');
-                if (currentLevel >= parseInt(localStorage.getItem('ws_user_level') || 1)) {
-                    localStorage.setItem('ws_user_level', currentLevel + 1);
+                playSound('win');
+                if (currentLevel >= (parseInt(localStorage.getItem('ws_lvl')) || 1)) {
+                    localStorage.setItem('ws_lvl', currentLevel + 1);
                 }
-                setTimeout(() => {
-                    document.getElementById('win-modal').classList.add('show');
-                }, 300);
+                setTimeout(() => document.getElementById('win-modal').classList.add('show'), 300);
             }
         }
 
-        function nextLevel() {
-            currentLevel++;
-            startLevel(currentLevel);
-        }
+        function nextLevel() { currentLevel++; startLevel(currentLevel); }
     </script>
 </body>
 </html>
